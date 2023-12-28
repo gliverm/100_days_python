@@ -10,6 +10,11 @@ The intention of this repo is to be used to demonstrate the basics of a simple P
 * Docker
 * Visual Studio Code IDE
 
+### How to bring up Development Environment
+1. From a new VSCode window open the project.
+2. VSCode should ask to re-open project in a container.  If not click on lower left green corner to re-open in a container.
+3. After the container is up select the python interpreter.  More than likely the recommneded value is highlighted.  If not close down the VSCode window and re-open in the container.  I've seen where VSCode once in a while does not have the correct virtual environment in the environments to select. 
+
 ### Useful References
 
 * https://docs.docker.com/develop/develop-images/dockerfile_best-practices/
