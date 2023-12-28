@@ -3,8 +3,8 @@
 # ------------------------------
 # ------------------------------
 # IMAGE: Target 'base' image
-# docker build --file Dockerfile --target base -t pymntos-base:test .
-# docker run -it --rm --name base pymntos-base:test
+# docker build --file Dockerfile --target base -t pymntos-base .
+# docker run -it --rm --name pymntos-base pymntos-base
 # ------------------------------
 ARG UBUNTU_RELEASE=22.04
 FROM ubuntu:${UBUNTU_RELEASE} AS base
@@ -33,12 +33,14 @@ RUN ["git", "--version"]
 
 # ------------------------------
 # IMAGE: Target 'pythonbase' for base of all images that need Python
-# docker build --file Dockerfile --target pythonbase -t pymntos-pythonbase:test .
-# docker run -it --rm --name pythonbase pymntos-pythonbase:test
+# docker build --file Dockerfile --target pythonbase -t pymntos-pythonbase .
+# docker run -it --rm pymntos-pythonbase
 # ------------------------------
 FROM base AS pythonbase
 ARG PYTHON_VERSION=3.11
 ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+# Use latest python related packages
 # hadolint ignore=DL3008
 RUN echo "===> Updating ppa for Python ..." && \
     apt-get update && \
@@ -67,10 +69,10 @@ RUN echo "===> Installing pip ..." && \
 
 # ------------------------------
 # IMAGE: Target 'dev' for code development - no Python pkgs loaded
-# docker build --file Dockerfile --target dev -t st-scale-toolbox-dev:test .
-# docker run -it --rm --name st-scale-toolbox-dev st-scale-toolbox-dev:test
-# docker container run -it -d -v st-scale-toolbox:/development -v ~/.ssh:/root/ssh -v ~/.gitconfig:/root/.gitconfig --name st-scale-toolbox-dev st-scale-toolbox-dev:test
-# docker container run -it -v st-scale-toolbox:/development -v ~/.ssh:/root/ssh -v ~/.gitconfig:/root/.gitconfig --name st-scale-toolbox-dev st-scale-toolbox-dev:test
+# docker build --file Dockerfile --target dev -t pymntos-dev .
+# docker run -it --rm pymntos-dev
+# docker container run -it -d -v pymntos-dev:/development -v ~/.ssh:/root/ssh -v ~/.gitconfig:/root/.gitconfig pymntos-dev
+# docker container run -it -v pymntos-dev:/development -v ~/.ssh:/root/ssh -v ~/.gitconfig:/root/.gitconfig pymntos-dev
 # ------------------------------
 FROM pythonbase AS dev
 ARG PROJECT_DIR=/development
@@ -82,12 +84,12 @@ WORKDIR $PROJECT_DIR
 # IMAGE: Target 'qa' for static code analysis and unit testing
 # Future: Consider benefit lint shell script in addition to below
 # Install the latest static code analysis tools
-# docker build --file Dockerfile --target qa -t st-scale-toolbox-qa:test .
-# docker run -i --rm -v ${PWD}:/code st-scale-toolbox-qa:test pylint --exit-zero --rcfile=setup.cfg **/*.py
-# docker run -i --rm -v ${PWD}:/code st-scale-toolbox-qa:test flake8 --exit-zero
-# docker run -i --rm -v ${PWD}:/code st-scale-toolbox-qa:test bandit -r --ini setup.cfg
-# docker run -i --rm -v $(pwd):/code -w /code st-scale-toolbox-qa:test black --check --exclude st-scale-toolbox/tests/ st-scale-toolbox/ || true
-# docker run -i --rm -v ${PWD}:/code st-scale-toolbox-unittest:test pytest --with-xunit --xunit-file=pyunit.xml --cover-xml --cover-xml-file=cov.xml st-scale-toolbox/tests/*.py
+# docker build --file Dockerfile --target qa -t pymntos-qa .
+# docker run -i --rm -v ${PWD}:/code pymntos-qa:test pylint --exit-zero --rcfile=setup.cfg **/*.py
+# docker run -i --rm -v ${PWD}:/code pymntos-qa:test flake8 --exit-zero
+# docker run -i --rm -v ${PWD}:/code pymntos-qa:test bandit -r --ini setup.cfg
+# docker run -i --rm -v $(pwd):/code -w /code pymntos-qa:test black --check --exclude pymntos/tests/ pymntos/ || true
+# docker run -i --rm -v ${PWD}:/code pymntos-unittest:test pytest --with-xunit --xunit-file=pyunit.xml --cover-xml --cover-xml-file=cov.xml pymntos/tests/*.py
 # ------------------------------
 FROM pythonbase AS qa
 WORKDIR /
@@ -101,8 +103,8 @@ WORKDIR /code/
 
 # ------------------------------
 # IMAGE: Target 'builder' builds production app utilizing pipenv
-# docker build --file Dockerfile --target builder -t st-scale-toolbox:builder .
-# docker run -it --rm --name builder st-scale-toolbox:builder sh
+# docker build --file Dockerfile --target builder -t pymntos-builder .
+# docker run -it --rm pymntos-builder sh
 # ------------------------------
 FROM pythonbase as builder
 RUN echo "===> Installing specific python package versions ..."
@@ -126,11 +128,8 @@ RUN echo "===> Building toolbox application runtime . . ." && \
 
 # ------------------------------
 # IMAGE: Target 'app' for final production app build
-# docker build --file Dockerfile --target app -t st-scale-toolbox:app .
-# docker run -it --rm --name st-scale-toolbox st-scale-toolbox:app sh
-# docker run -it --rm -v $PWD/config:/config --name st-scale-toolbox st-scale-toolbox:app bash
-# docker run -it --rm -v $PWD/home/toolboxuser/config:/config --name st-scale-toolbox st-scale-toolbox:app bash
-# docker run -it --rm -v $PWD/config:/toolbox/config --name st-scale-toolbox st-scale-toolbox:app bash
+# docker build --file Dockerfile --target app -t pymntos-app .
+# docker run -it --rm pymntos-app sh
 # Using volumnes with a username different than host is problematic: https://github.com/moby/moby/issues/2259
 # ------------------------------
 FROM base as app

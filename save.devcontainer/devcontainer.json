@@ -7,26 +7,28 @@
 		"context": "..",
 		// Update the 'dockerFile' property if you aren't using the standard 'Dockerfile' filename.
 		"dockerfile": "../Dockerfile",
-		"target": "dev"
+        "target": "dev"
 	},
-	"customizations": {
-		"vscode": {
-			"extensions": [
-				"ms-azuretools.vscode-docker",
-				"ms-python.python"
-			]
-		}
-	}
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
+	// "forwardPorts": [8089],
+	# "appPort": [ "8089:8089" ],
 
 	// Uncomment the next line to run commands after the container is created.
 	// "postCreateCommand": "cat /etc/os-release",
-	// "postCreateCommand": "./.devcontainer/postCreateCommand.sh",
+	"postCreateCommand": "./.devcontainer/postCreateCommand.sh",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"hediet.vscode-drawio",
+				"donjayamanne.python-extension-pack",
+				"ms-azuretools.vscode-docker"
+			]
+		}
+	}
 
 	// Configure tool-specific properties.
 	// "customizations": {},
